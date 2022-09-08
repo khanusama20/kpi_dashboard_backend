@@ -1,0 +1,25 @@
+{
+  "name": "kpi_dashboard_backend",
+  "version": "1.0.0",
+  "description": "It is replication version of salesdrive which is created from the scratch using PostgreSQL",
+  "main": "app.js",
+  "scripts": {
+    "test": "mocha"
+  },
+  "repository": {
+    "type": "git",
+    "url": "git+https://github.com/khanusama20/kpi_dashboard_backend.git"
+  },
+  "author": "Khan Usama",
+  "license": "ISC",
+  "bugs": {
+    "url": "https://github.com/khanusama20/kpi_dashboard_backend/issues"
+  },
+  "homepage": "https://github.com/khanusama20/kpi_dashboard_backend#readme",
+  "dependencies": {
+    "body-parser": "^1.20.0",
+    "express": "^4.18.1",
+    "joi": "^17.6.0",
+    "pg": "^8.8.0"
+  }
+}
