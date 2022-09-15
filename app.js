@@ -1,9 +1,11 @@
 const express = require('express');
 const bodyParser = require('body-parser');
+require('dotenv').config();
 const app = express();
+const appRoutes = require('./src/routes/index.routes');
 
 // db connection
-const pool = require('./config/connection.postgresql');
+const pool = require('./src/config/connection.postgresql');
 
 try {
   pool.query('SELECT $1::text as message', ['Database connection established!'], (err, res) => {
@@ -19,6 +21,12 @@ app.use(
     extended: true,
   })
 );
+
+app.use((req, res, next) => {
+  console.log(`${req.method} ${process.env.SERVER_ADDRESS}${req.url}`);
+  next();
+})
+app.use('/api/v1', appRoutes);
 
 const PORT = 5025;
 app.listen(PORT, () => {
