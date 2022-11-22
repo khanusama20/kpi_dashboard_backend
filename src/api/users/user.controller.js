@@ -3,7 +3,7 @@ const bcrypt = require('bcrypt');
 const { UserJoiSchema } = require('./user.joi');
 const resManager = require('../../utilities/responseManager'); // resManager = Response Managaer
 const pool = require('../../config/connection.postgresql');
-const pattern = require('../../constants/pattern.regex');
+const { generateUID } = require('../../utilities/generateUID')
 
 /**
  * 
@@ -14,55 +14,42 @@ const agentSignUp = async (req, res) => {
   try {
     await UserJoiSchema.validateAsync(req.body);
     let data = req.body;
-    let age = moment(req.body.birth_date.split('/').join(''), 'MMDDYYYY').fromNow();
-    let date = moment().format();
-
-    age = age.split(' ')[0];
+    let new_agent = await generateUID('AG');
 
     const salt = bcrypt.genSaltSync(10);
     const hash = bcrypt.hashSync(req.body.password, salt);
 
     const insertQuery = `
     INSERT INTO agents(
+      agent_id,
       first_name,
       last_name,
-      pan_no,
       email,
       mobile_no,
       gender,
-      birth_date,
-      age,
       password,
       emp_code,
-      state,
-      city,
-      created_at,
-      updated_at,
+      salt,
       login_count,
       last_login_date,
-      salt
-    ) VALUES ($1, $2, $3, $4, $5, $6, $7, $8, $9, $10, $11, $12, $13, $14, $15, $16, $17)
+      created_at,
+      updated_at
+    ) VALUES ($1, $2, $3, $4, $5, $6, $7, $8, $9, $10, $11, current_timestamp, current_timestamp)
     RETURNING *;
     `;
 
     const values = [
+      new_agent,
       data.first_name,
       data.last_name,
-      data.pan_no,
       data.email,
       data.mobile_no,
       data.gender,
-      data.birth_date,
-      age,
       hash,
       data.emp_code,
-      data.state,
-      data.city,
-      date,
-      date,
+      salt,
       0,
-      null,
-      salt
+      null
     ];
 
     pool.query(insertQuery, values, (error, result) => {
@@ -70,6 +57,14 @@ const agentSignUp = async (req, res) => {
         console.error(error.stack)
         resManager.DatabaseError(req, res, 'Database error: ' + error.message);
       } else {
+        const updateQuery = `UPDATE uid_index SET agent_last_index = agent_last_index + 1`;
+        pool.query(updateQuery, (error) => {
+          if (!error) {
+            console.log("UID is updated successfully")
+          } else {
+            console.error(error.stack)
+          }
+        });
         resManager.success(req, res, result.rows);
       }
     });
