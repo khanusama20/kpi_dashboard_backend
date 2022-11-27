@@ -11,6 +11,16 @@ try {
   pool.query('SELECT $1::text as message', ['Database connection established!'], (err, res) => {
     console.log(err ? err.stack : res.rows[0].message); // Hello World!
   })
+
+  // pool.query('SELECT * FROM uid_index', [], async (error, result) => {
+  //   if (error) {
+  //     console.log("Error ", error)
+  //     // reject(error)
+  //   } else {
+  //     // resolve(result)
+  //     console.log("===result ", result.rows);
+  //   }
+  // })
 } catch (error) {
   console.log("Something went wrong while connecting to databases");
 }

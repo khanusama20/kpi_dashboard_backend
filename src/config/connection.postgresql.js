@@ -7,4 +7,33 @@ const pool = new Pool({
   port: 5432,
 })
 
-module.exports = pool;
+function psPool (query = '', values = [], cb = null) {
+  console.log(`SQL>>> ${query}`, values);
+  if (!cb) {
+    return new Promise((resolve, reject) => {
+      pool.query(query, values, (error, result) => {
+        if (error) {
+          console.error(error.stack);
+          reject(error);
+          return;
+        }
+        console.log("Query executed successfully!...");
+        resolve(result);
+      })
+    });
+  } else {
+    pool.query(query, values, (error, result) => {
+      if (error) {
+        console.error(error.stack);
+        cb(error, null);
+        return;
+      }
+      console.log("Query executed successfully!...");
+      cb(null, result);
+    })
+  }
+}
+
+module.exports = {
+  query: psPool
+};

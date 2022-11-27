@@ -48,3 +48,14 @@ CREATE TABLE channels (
   updated_at TIMESTAMP NOT NULL
 );
 
+
+CREATE TABLE kpi_mapping (
+  id SERIAL PRIMARY KEY NOT NULL,
+  mapping_for VARCHAR (250) NOT NULL,
+  label_name VARCHAR(250) NOT NULL,
+  sheet_col_name VARCHAR(250) NOT NULL,
+  status CHAR(1),
+  created_at TIMESTAMP
+);
+
+

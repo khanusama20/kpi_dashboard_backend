@@ -30,7 +30,6 @@ let createChannel = async function (req, res) {
         console.error(error.stack)
         resManager.DatabaseError(req, res, 'Database error: ' + error.message);
       } else {
-
         // To increate auto increment id
         const updateQuery = `UPDATE uid_index SET ch_last_index = ch_last_index + 1`;
         pool.query(updateQuery, (error) => {
