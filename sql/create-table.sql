@@ -58,4 +58,11 @@ CREATE TABLE kpi_mapping (
   created_at TIMESTAMP
 );
 
+CREATE TABLE kpi_fields (
+  id SERIAL PRIMARY KEY NOT NULL,
+  field_name VARCHAR (250) NOT NULL,
+  status CHAR(1),
+  created_at TIMESTAMP
+);
+
 
