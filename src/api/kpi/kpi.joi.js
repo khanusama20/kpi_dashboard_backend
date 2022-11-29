@@ -11,6 +11,11 @@ const MappingJoiSchema = joi.object({
   }))
 });
 
+const KPILabelMasterJoiSchema = joi.object({
+  field_name: joi.string().min(3).max(250).pattern(ALPHA_SPACE).required(true),
+})
+
 module.exports = {
-  MappingJoiSchema
+  MappingJoiSchema,
+  KPILabelMasterJoiSchema
 }
