@@ -10,17 +10,21 @@ const addNewLabel = async (req, res) => {
 
     const insertQuery = `
       INSERT INTO kpi_fields(
+        lable_name,
         field_name,
         status,
         created_at
-      ) VALUES ($1, $2, current_timestamp)
+      ) VALUES ($1, $2, $3, current_timestamp)
       RETURNING *;
     `;
 
-    let result = await pool.query(insertQuery, [ req.body.field_name, 1 ]);
+    let noSpecialCharacters = req.body.label_name.replace(/[^a-zA-Z0-9 ]/g, '');
+    let col_name = noSpecialCharacters.split(' ').join('_');
+
+    let result = await pool.query(insertQuery, [ req.body.label_name, col_name, 1 ]);
     
     // if success then we add new column in the kpi table
-    let col_name = req.body.field_name.split(' ').join('_');
+    
     const alterQuery = `ALTER TABLE agent_kpi ADD COLUMN ${col_name} VARCHAR(20);`
     let updatedResult = await pool.query(alterQuery, []);
 
