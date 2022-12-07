@@ -9,16 +9,48 @@ const bulkUploadKPI = async (req, res) => {
       return;
     }
 
+    const months = {
+      "january": "01",
+      "february": "02",
+      "march": "03",
+      "april": "04",
+      "may": "05",
+      "june": "06",
+      "july": "07",
+      "august": "08",
+      "september": "09",
+      "october": "10",
+      "november": "11",
+      "december": "12"
+    };
+
+    if (!months[req.body.month.toLowerCase()]) {
+      resManager.BadRequest(req, res, `Please verify month name once, ${Object.keys(months).join(", ")}`);
+      return;
+    }
+
+    if (!/^(19|20)\d{2}$/.test(req.body.year)) {
+      resManager.BadRequest(req, res, `Invalid year input`);
+      return;
+    }
+
     let plainKPIObj = {};
     let size = labels.length;
     for (let i = 0; i < size; i++) {
       if (labels[i]['status'] == '1') {
         plainKPIObj = {
           ...plainKPIObj,
-          [labels[i]['field_name']]: null
+          [labels[i]['lable_name']]: labels[i]['field_name']
         }
       }
     }
+
+    // resManager.success(req, res, {
+    //   db_table_cols: db_table_cols,
+    //   lastValue: lastValue,
+    //   identifiers: identifiers
+    // });
+    // return;
 
     let colMapping = await getKPIColumnMapping(req.query.kpi_for);
     let mappingDirectory = {};
@@ -31,20 +63,57 @@ const bulkUploadKPI = async (req, res) => {
     }
 
     // resManager.success(req, res, mappingDirectory);
+    // return;
+
+    // resManager.success(req, res, mappingDirectory);
     let kpiData = req.body.kpi_data || [];
     let bulk = [];
+
+    let db_table_cols = 'agent_id, kpi_date, month_name, year_txt, ';
+    let identifiers = '$1, $2, $3, $4, ';
+    let lastValue = 5;
+    let insertQuery = '';
     async.everySeries(kpiData, (kpi, callback) => {
       // iterate obj
       let dataSchema = {};
+      let values = [
+        kpi["Agent ID"],
+        new Date(),
+        req.body.month.toLowerCase(),
+        req.body.year,
+      ];
       for (let props in mappingDirectory) {
         dataSchema = {
           ...dataSchema,
-          [props]: kpi[mappingDirectory[props]]
+          [plainKPIObj[props]]: kpi[mappingDirectory[props]]
         }
+
+        db_table_cols += plainKPIObj[props]+', ';
+        identifiers += `$${lastValue}, `;
+        lastValue += 1;
+        values.push(kpi[mappingDirectory[props]])
       }
 
-      bulk.push(dataSchema);
-      callback(null, true)
+      insertQuery = `
+        INSERT INTO agent_kpi(
+          ${db_table_cols}
+          created_at,
+          updated_at
+        ) VALUES (${identifiers} current_timestamp, current_timestamp)
+        RETURNING *;
+      `;
+
+      pool.query(insertQuery, values, (error, result) => {
+        if (error) {
+          callback(error, null);
+        } else {
+          db_table_cols = 'agent_id, kpi_date, month_name, year_txt, ';
+          identifiers = '$1, $2, $3, $4, ';
+          lastValue = 5;
+          bulk.push(result);
+          callback(null, true)
+        }
+      });      
     }, () => {
       resManager.success(req, res, bulk);
     })
@@ -60,7 +129,7 @@ const bulkUploadKPI = async (req, res) => {
 
 const getKPILabels = async () => {
   try {
-    let result = await pool.query('SELECT field_name, status FROM kpi_fields', []);
+    let result = await pool.query('SELECT lable_name, field_name, status FROM kpi_fields', []);
     return result.rows;
   } catch (error) {
     throw error;
