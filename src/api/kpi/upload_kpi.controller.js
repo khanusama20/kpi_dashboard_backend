@@ -107,6 +107,7 @@ const bulkUploadKPI = async (req, res) => {
         if (error) {
           callback(error, null);
         } else {
+          // These are static cols in the table
           db_table_cols = 'agent_id, kpi_date, month_name, year_txt, ';
           identifiers = '$1, $2, $3, $4, ';
           lastValue = 5;
