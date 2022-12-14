@@ -19,7 +19,7 @@ const addNewLabel = async (req, res) => {
     `;
 
     let noSpecialCharacters = req.body.label_name.replace(/[^a-zA-Z0-9 ]/g, '');
-    let col_name = noSpecialCharacters.split(' ').join('_');
+    let col_name = noSpecialCharacters.split(' ').join('_').toLowerCase();
 
     let result = await pool.query(insertQuery, [ req.body.label_name, col_name, 1 ]);
     

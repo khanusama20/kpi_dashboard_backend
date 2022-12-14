@@ -65,3 +65,32 @@ CREATE TABLE kpi_fields (
   status CHAR(1),
   created_at TIMESTAMP
 );
+
+CREATE TABLE roles (
+  role_id CHAR(10) PRIMARY KEY NOT NULL,
+  role_name VARCHAR(250) NOT NULL,
+  channel_id VARCHAR(10) REFERENCES channels (channel_code),
+  status CHAR(1),
+  created_at TIMESTAMP NOT NULL,
+  updated_at TIMESTAMP NOT NULL
+);
+
+CREATE TABLE hierarchies (
+  hierarchy_code CHAR(10) PRIMARY KEY NOT NULL,
+  hierarchy_name VARCHAR(250) NOT NULL,
+  channel_id VARCHAR(10) REFERENCES channels (channel_code),
+  status CHAR(1),
+  created_at TIMESTAMP NOT NULL,
+  updated_at TIMESTAMP NOT NULL
+);
+
+CREATE TABLE designations (
+  desig_id VARCHAR(10) PRIMARY KEY NOT NULL,
+  desig_name VARCHAR(250) NOT NULL,
+  channel_id VARCHAR(10) REFERENCES channels (channel_code),
+  hierarchy_id VARCHAR(10) REFERENCES hierarchies (hierarchy_code),
+  role_id VARCHAR(10) REFERENCES roles (role_id),
+  status CHAR(1),
+  created_at TIMESTAMP NOT NULL,
+  updated_at TIMESTAMP NOT NULL
+);

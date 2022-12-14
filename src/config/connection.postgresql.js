@@ -8,7 +8,16 @@ const pool = new Pool({
 })
 
 function psPool (query = '', values = [], cb = null) {
-  console.log(`SQL>>> ${query}`, values);
+  // independent
+  setTimeout(() => {
+    let log_query = query;
+    for (let i = 0; i < values.length; i++) {
+      let code = typeof(values[i]) == 'string' ? 1 : 0;
+      log_query = log_query.replace('$'+(i+1), code == 1 ? `'${values[i]}'`: values[i]);
+    }
+    console.log(`SQL>>> ${log_query}`);
+  }, 0);
+  
   if (!cb) {
     return new Promise((resolve, reject) => {
       pool.query(query, values, (error, result) => {

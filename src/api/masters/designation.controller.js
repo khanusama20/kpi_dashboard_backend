@@ -1,27 +1,33 @@
-const { ChannelMasterJoiSchema } = require('./masters.joi');
+const { DesignationMasterJoiSchema } = require('./masters.joi');
 const resManager = require('../../utilities/responseManager'); // resManager = Response Managaer
 const pool = require('../../config/connection.postgresql');
 const { generateUID } = require('../../utilities/generateUID');
 
-let createChannel = async function (req, res) {
+let createDesignation = async function (req, res) {
   try {
-    await ChannelMasterJoiSchema.validateAsync(req.body);
-    let channel_code = await generateUID('CH');
+    await DesignationMasterJoiSchema.validateAsync(req.body);
+    let designationId = await generateUID('DC');
 
     const insertQuery = `
-    INSERT INTO channels(
-      channel_code,
-      channel_name,
-      status,
-      created_at,
-      updated_at
-    ) VALUES ($1, $2, $3, current_timestamp, current_timestamp)
-    RETURNING *;
+      INSERT INTO designations (
+        desig_id,
+        desig_name,
+        channel_id,
+        hierarchy_id,
+        role_id,
+        status,
+        created_at,
+        updated_at
+      ) VALUES ($1, $2, $3, $4, $5, $6, current_timestamp, current_timestamp)
+      RETURNING *;
     `;
 
     const values = [
-      channel_code,
-      req.body.channel_name,
+      designationId,
+      req.body.designation_name,
+      req.body.channel_id,
+      req.body.hierarchy_id,
+      req.body.role_id,
       1
     ];
 
@@ -30,8 +36,9 @@ let createChannel = async function (req, res) {
         console.error(error.stack)
         resManager.DatabaseError(req, res, 'Database error: ' + error.message);
       } else {
+
         // To increate auto increment id
-        const updateQuery = `UPDATE uid_index SET ch_last_index = ch_last_index + 1`;
+        const updateQuery = `UPDATE uid_index SET dc = dc + 1`;
         pool.query(updateQuery, (error) => {
           if (!error) {
             console.log("UID is updated successfully")
@@ -54,5 +61,5 @@ let createChannel = async function (req, res) {
 }
 
 module.exports = {
-  createChannel: createChannel
+  createDesignation: createDesignation
 }

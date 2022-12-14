@@ -1,4 +1,4 @@
-const { RoleMasterJoiSchema } = require('./channel.joi');
+const { RoleMasterJoiSchema } = require('./masters.joi');
 const resManager = require('../../utilities/responseManager'); // resManager = Response Managaer
 const pool = require('../../config/connection.postgresql');
 const { generateUID } = require('../../utilities/generateUID');
@@ -12,16 +12,18 @@ let createRole = async function (req, res) {
     INSERT INTO roles(
       role_id,
       role_name,
+      channel_id,
       status,
       created_at,
       updated_at
-    ) VALUES ($1, $2, $3, current_timestamp, current_timestamp)
+    ) VALUES ($1, $2, $3, $4, current_timestamp, current_timestamp)
     RETURNING *;
     `;
 
     const values = [
       role_id,
       req.body.role_name,
+      req.body.channel_id,
       1
     ];
 

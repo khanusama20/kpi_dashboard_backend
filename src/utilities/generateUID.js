@@ -17,7 +17,9 @@ let getQueryResult = function () {
 const OPT = {
   'AG': 'agent_last_index',
   'CH': 'ch_last_index',
-  'RC': 'rc'
+  'RC': 'rc',
+  'HC': 'hc',
+  'DC': 'dc'
 }
 
 async function generateUID(initial = null) {

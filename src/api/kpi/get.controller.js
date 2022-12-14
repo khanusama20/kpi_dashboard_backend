@@ -12,7 +12,7 @@ const agentKPI = async (req, res) => {
     let promiseResult = await Promise.all(
       [
         new Promise((resolve, reject) => {
-          pool.query(`SELECT * FROM agent_kpi WHERE agent_id = $1 ORDER BY kpi_date DESC`, [agentId], (error, result) => {
+          pool.query(`SELECT * FROM agent_kpi WHERE agent_id = $1 ORDER BY kpi_date DESC LIMIT 1`, [agentId], (error, result) => {
             if (error) {
               reject(error)
             } else {
