@@ -19,6 +19,23 @@ const agentSignUp = async (req, res) => {
     const salt = bcrypt.genSaltSync(10);
     const hash = bcrypt.hashSync(req.body.password, salt);
 
+    let masterData = await pool.query('SELECT * FROM designations WHERE desig_id = $1', [data.designation_id]);
+    if (masterData.rows.length === 0) {
+      resManager.BadRequest(req, res, "Invalid designation id");
+      return;
+    }
+
+    // varify manager
+    if (data.manager_id) {
+      let manager_data = await pool.query('SELECT agent_id, hierarchy_id FROM agents WHERE agent_id = $1', [data.manager_id]);
+      if (manager_data.rows.length === 0) {
+        resManager.BadRequest(req, res, "Invalid manager id");
+        return;
+      }
+    } else {
+      data.manager_id = null
+    }
+
     const insertQuery = `
     INSERT INTO agents(
       agent_id,
@@ -32,9 +49,13 @@ const agentSignUp = async (req, res) => {
       salt,
       login_count,
       last_login_date,
+      report_to,
+      channel_id,
+      hierarchy_id,
+      role_id,
       created_at,
       updated_at
-    ) VALUES ($1, $2, $3, $4, $5, $6, $7, $8, $9, $10, $11, current_timestamp, current_timestamp)
+    ) VALUES ($1, $2, $3, $4, $5, $6, $7, $8, $9, $10, $11, $12, $13, $14, $15, current_timestamp, current_timestamp)
     RETURNING *;
     `;
 
@@ -49,7 +70,11 @@ const agentSignUp = async (req, res) => {
       data.emp_code,
       salt,
       0,
-      null
+      null,
+      data.manager_id,
+      data.channel_id,
+      masterData.rows[0].hierarchy_id,
+      masterData.rows[0].role_id,
     ];
 
     pool.query(insertQuery, values, (error, result) => {
